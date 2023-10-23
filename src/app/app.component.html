@@ -28,9 +28,9 @@
 <div class="right">
   <input multiple type="file" (change)="onImageSelected($event)" />
   <div class="preview">
-    <div
-      *ngFor="let item of filteredMetadata"
-      [innerHtml]="images[item.id]"
-    ></div>
+    <ng-container *ngFor="let item of filteredMetadata">
+      <div [innerHtml]="images[item.id]"></div>
+      <span>{{ item.id }}</span>
+    </ng-container>
   </div>
 </div>
