@@ -1,4 +1,10 @@
-import { Component, NgZone, SecurityContext, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  NgZone,
+  SecurityContext,
+  ViewChild,
+} from '@angular/core';
 import { MatAccordion } from '@angular/material/expansion';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -11,6 +17,7 @@ export class AppComponent {
   @ViewChild(MatAccordion) accordion!: MatAccordion;
   @ViewChild('preview') preview!: HTMLDivElement;
 
+  readingImages?: boolean;
   title = 'collection-preview';
   traits: string[] = [];
   traitCount: { [trait: string]: number } = {};
@@ -20,7 +27,11 @@ export class AppComponent {
   filteredMetadata: Array<{ id: string; [trait: string]: string }> = [];
   images: { [id: string]: string | null } = {};
 
-  constructor(private _ngZone: NgZone, private _sanitizer: DomSanitizer) {}
+  constructor(
+    private _cdRef: ChangeDetectorRef,
+    private _ngZone: NgZone,
+    private _sanitizer: DomSanitizer
+  ) {}
 
   onMetadataSelected(event: Event) {
     const files = (event.target as HTMLInputElement).files;
@@ -93,11 +104,23 @@ export class AppComponent {
 
     if (!files) return;
 
+    this.readingImages = true;
+
+    let readCount = 0;
+
     for (let i = 0; i < files.length; i++) {
       const reader = new FileReader();
 
       this._ngZone.runOutsideAngular(() => {
         reader.onload = () => {
+          readCount++;
+
+          if (readCount === files.length - 1) {
+            this.readingImages = false;
+
+            this._cdRef.detectChanges();
+          }
+
           const image = new Image();
 
           image.height = 300;
